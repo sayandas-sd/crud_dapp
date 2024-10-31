@@ -17,7 +17,7 @@ pub mod crud_app {
         Ok(())
     }
 
-    pub fn update_todolist(ctx: Context<CreateState>, title: String, message: String) -> Result<()> {
+    pub fn update_todolist(ctx: Context<UpdateState>, title: String, message: String) -> Result<()> {
       let todo_entry = &mut ctx.accounts.todo_entry;
       todo_entry.message = message;
 
