@@ -17,13 +17,19 @@ pub mod crud_app {
         Ok(())
     }
 
-    pub fn update_todolist(ctx: Context<UpdateState>, title: String, message: String) -> Result<()> {
+    pub fn update_todolist(ctx: Context<UpdateState>, _title: String, message: String) -> Result<()> {
       let todo_entry = &mut ctx.accounts.todo_entry;
       todo_entry.message = message;
 
       Ok(())
     }
+
+    pub fn delete_todolist(_ctx: Context<DeleteState>, _title: String) -> Result<()> {
+
+      Ok(())
+    }
 }
+
 
 //create
 #[derive(Accounts)]
@@ -66,6 +72,28 @@ pub struct UpdateState<'info> {
 
   pub system_program:  Program<'info, System>
 
+}
+
+
+//delete
+
+#[derive(Accounts)]
+#[instruction(title: String)]
+pub struct DeleteState<'info> {
+  #[account(
+     mut,
+     seeds = [title.as_bytes(), owner.key().as_ref()],
+     bump,
+     close= owner,
+  )]
+
+  pub todo_entry: Account<'info, EntryState>,
+
+  #[account(mut)]
+
+  pub owner: Signer<'info>,
+
+  pub system_program: Program<'info, System>,
 }
 
 #[account]
