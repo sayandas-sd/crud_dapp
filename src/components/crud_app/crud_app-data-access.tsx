@@ -10,6 +10,13 @@ import {useCluster} from '../cluster/cluster-data-access'
 import {useAnchorProvider} from '../solana/solana-provider'
 import {useTransactionToast} from '../ui/ui-layout'
 
+interface CreateEntryArgs {
+  title: string;
+  message:  string;
+  owner:  PublicKey;
+}
+
+
 export function useCrudAppProgram() {
   const { connection } = useConnection()
   const { cluster } = useCluster()
@@ -20,7 +27,7 @@ export function useCrudAppProgram() {
 
   const accounts = useQuery({
     queryKey: ['crud_app', 'all', { cluster }],
-    queryFn: () => program.account.crud_app.all(),
+    queryFn: () => program.account.entryState.all(),
   })
 
   const getProgramAccount = useQuery({
@@ -28,24 +35,32 @@ export function useCrudAppProgram() {
     queryFn: () => connection.getParsedAccountInfo(programId),
   })
 
-  const initialize = useMutation({
-    mutationKey: ['crud_app', 'initialize', { cluster }],
-    mutationFn: (keypair: Keypair) =>
-      program.methods.initialize().accounts({ crud_app: keypair.publicKey }).signers([keypair]).rpc(),
-    onSuccess: (signature) => {
-      transactionToast(signature)
-      return accounts.refetch()
+
+  const createEntry =  useMutation<string, Error, CreateEntryArgs>({
+    mutationKey: [`entryState`, `create`, { cluster }],
+    mutationFn: async ({title, message, owner}) => {
+      return program.methods.createTodolist(title, message).rpc();
     },
-    onError: () => toast.error('Failed to initialize account'),
-  })
+
+    onSuccess: (signature) => {
+      transactionToast(signature),
+      accounts.refetch();
+    },
+
+    onError: (error) => {
+      toast.error(`Error creating entry: ${error.message}`);
+    }
+  }) 
+
 
   return {
     program,
-    programId,
     accounts,
     getProgramAccount,
-    initialize,
+    createEntry
   }
+
+  
 }
 
 export function useCrudAppProgramAccount({ account }: { account: PublicKey }) {
@@ -55,50 +70,46 @@ export function useCrudAppProgramAccount({ account }: { account: PublicKey }) {
 
   const accountQuery = useQuery({
     queryKey: ['crud_app', 'fetch', { cluster, account }],
-    queryFn: () => program.account.crud_app.fetch(account),
+    queryFn: () => program.account.entryState.fetch(account),
   })
 
-  const closeMutation = useMutation({
-    mutationKey: ['crud_app', 'close', { cluster, account }],
-    mutationFn: () => program.methods.close().accounts({ crud_app: account }).rpc(),
-    onSuccess: (tx) => {
-      transactionToast(tx)
-      return accounts.refetch()
+  const updateEntry =  useMutation<string, Error, CreateEntryArgs>({
+    mutationKey: [`entryState`, `update`, { cluster }],
+    mutationFn: async ({title, message}) => {
+      return program.methods.updateTodolist(title, message).rpc();
     },
-  })
 
-  const decrementMutation = useMutation({
-    mutationKey: ['crud_app', 'decrement', { cluster, account }],
-    mutationFn: () => program.methods.decrement().accounts({ crud_app: account }).rpc(),
-    onSuccess: (tx) => {
-      transactionToast(tx)
-      return accountQuery.refetch()
+    onSuccess: (signature) => {
+      transactionToast(signature),
+      accounts.refetch();
     },
-  })
 
-  const incrementMutation = useMutation({
-    mutationKey: ['crud_app', 'increment', { cluster, account }],
-    mutationFn: () => program.methods.increment().accounts({ crud_app: account }).rpc(),
-    onSuccess: (tx) => {
-      transactionToast(tx)
-      return accountQuery.refetch()
-    },
-  })
+    onError: (error) => {
+      toast.error(`Error creating entry: ${error.message}`);
+    }
+  }) 
 
-  const setMutation = useMutation({
-    mutationKey: ['crud_app', 'set', { cluster, account }],
-    mutationFn: (value: number) => program.methods.set(value).accounts({ crud_app: account }).rpc(),
-    onSuccess: (tx) => {
-      transactionToast(tx)
-      return accountQuery.refetch()
+
+  const deleteEntry =  useMutation({
+    mutationKey: [`entryState`, `delete`, { cluster }],
+    mutationFn: (title:  string) => {
+      return program.methods.deleteTodolist(title).rpc();
     },
-  })
+
+    onSuccess: (signature) => {
+      transactionToast(signature),
+      accounts.refetch();
+    },
+
+    onError: (error) => {
+      toast.error(`Error creating entry: ${error.message}`);
+    }
+  }) 
+
 
   return {
     accountQuery,
-    closeMutation,
-    decrementMutation,
-    incrementMutation,
-    setMutation,
+    updateEntry,
+    deleteEntry
   }
 }

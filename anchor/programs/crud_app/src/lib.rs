@@ -2,7 +2,7 @@
 
 use anchor_lang::{prelude::*, solana_program::sysvar::recent_blockhashes::Entry};
 
-declare_id!("AsjZ3kWAUSQRNt2pZVeJkywhZ6gpLpHZmJjduPmKZDZZ");
+declare_id!("B5TtVZqjoUEF5BXKcBbCuM71TicqWCkr9rPRDW6bjS2R");
 
 #[program]
 pub mod crud_app {

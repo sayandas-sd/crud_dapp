@@ -7,97 +7,43 @@
 export type CrudApp = {
   "address": "AsjZ3kWAUSQRNt2pZVeJkywhZ6gpLpHZmJjduPmKZDZZ",
   "metadata": {
-    "name": "crud_app",
+    "name": "crudApp",
     "version": "0.1.0",
     "spec": "0.1.0",
     "description": "Created with Anchor"
   },
   "instructions": [
     {
-      "name": "close",
+      "name": "createTodolist",
       "discriminator": [
-        98,
-        165,
-        201,
-        177,
-        108,
         65,
+        176,
+        160,
+        14,
+        194,
+        240,
         206,
-        96
+        49
       ],
       "accounts": [
         {
-          "name": "payer",
+          "name": "todoEntry",
           "writable": true,
-          "signer": true
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "title"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
         },
         {
-          "name": "crud_app",
-          "writable": true
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "decrement",
-      "discriminator": [
-        106,
-        227,
-        168,
-        59,
-        248,
-        27,
-        150,
-        101
-      ],
-      "accounts": [
-        {
-          "name": "crud_app",
-          "writable": true
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "increment",
-      "discriminator": [
-        11,
-        18,
-        104,
-        9,
-        104,
-        174,
-        59,
-        33
-      ],
-      "accounts": [
-        {
-          "name": "crud_app",
-          "writable": true
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "initialize",
-      "discriminator": [
-        175,
-        175,
-        109,
-        31,
-        13,
-        152,
-        155,
-        237
-      ],
-      "accounts": [
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "crud_app",
+          "name": "owner",
           "writable": true,
           "signer": true
         },
@@ -106,58 +52,146 @@ export type CrudApp = {
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "message",
+          "type": "string"
+        }
+      ]
     },
     {
-      "name": "set",
+      "name": "deleteTodolist",
       "discriminator": [
-        198,
-        51,
-        53,
-        241,
-        116,
-        29,
-        126,
-        194
+        209,
+        70,
+        63,
+        227,
+        56,
+        229,
+        16,
+        214
       ],
       "accounts": [
         {
-          "name": "crud_app",
-          "writable": true
+          "name": "todoEntry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "title"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "value",
-          "type": "u8"
+          "name": "title",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "updateTodolist",
+      "discriminator": [
+        138,
+        208,
+        75,
+        50,
+        0,
+        230,
+        174,
+        161
+      ],
+      "accounts": [
+        {
+          "name": "todoEntry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "title"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "message",
+          "type": "string"
         }
       ]
     }
   ],
   "accounts": [
     {
-      "name": "crud_app",
+      "name": "entryState",
       "discriminator": [
-        255,
-        176,
-        4,
-        245,
-        188,
-        253,
-        124,
-        25
+        28,
+        78,
+        177,
+        145,
+        104,
+        207,
+        246,
+        184
       ]
     }
   ],
   "types": [
     {
-      "name": "crud_app",
+      "name": "entryState",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "count",
-            "type": "u8"
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "name": "message",
+            "type": "string"
           }
         ]
       }
