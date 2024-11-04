@@ -1,8 +1,6 @@
 'use client'
 
-import { Keypair, PublicKey } from '@solana/web3.js'
-import { ellipsify } from '../ui/ui-layout'
-import { ExplorerLink } from '../cluster/cluster-ui'
+import { PublicKey } from '@solana/web3.js'
 import { useCrudAppProgram, useCrudAppProgramAccount } from './crud_app-data-access'
 import { useState } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
