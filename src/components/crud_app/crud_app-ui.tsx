@@ -1,22 +1,59 @@
 'use client'
 
 import { Keypair, PublicKey } from '@solana/web3.js'
-import { useMemo } from 'react'
 import { ellipsify } from '../ui/ui-layout'
 import { ExplorerLink } from '../cluster/cluster-ui'
 import { useCrudAppProgram, useCrudAppProgramAccount } from './crud_app-data-access'
+import { useState } from 'react'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 export function CrudAppCreate() {
-  const { initialize } = useCrudAppProgram()
+  const [ title, setTitle ] = useState("");
+  const [ message, setMessage ] = useState("");
+  const { createEntry } = useCrudAppProgram();
+  const { publicKey } = useWallet();
+
+
+
+  const isFormValid = title.trim() !== '' && message.trim() !== '';
+
+  const handleSubmit = () => {
+    if(publicKey && isFormValid) {
+      createEntry.mutateAsync({title, message, owner: publicKey});
+    }
+  }
+
+  if(!publicKey) {
+    return <p>
+      Conect Your Wallet.......
+    </p>
+  }
 
   return (
-    <button
-      className="btn btn-xs lg:btn-md btn-primary"
-      onClick={() => initialize.mutateAsync(Keypair.generate())}
-      disabled={initialize.isPending}
-    >
-      Create {initialize.isPending && '...'}
-    </button>
+    <div>
+      <input 
+            type="text" 
+            placeholder='title'
+            value={title}
+            onChange={(e)=> {
+              setTitle(e.target.value)
+            }}
+            className='input w-full max-w-xs flex items-center border'
+      />
+
+      <textarea 
+            placeholder='message'
+            value={message}
+            onChange={(e)=>{
+              setMessage(e.target.value)
+            }}
+            className='textarea w-full max-w-xs'
+      />
+
+      <button onClick={handleSubmit}
+      disabled={createEntry.isPending || !isFormValid}
+      className='btn btn-primary btn-xs' />
+    </div>
   )
 }
 
@@ -54,69 +91,67 @@ export function CrudAppList() {
 }
 
 function CrudAppCard({ account }: { account: PublicKey }) {
-  const { accountQuery, incrementMutation, setMutation, decrementMutation, closeMutation } = useCrudAppProgramAccount({
+  const { accountQuery, updateEntry, deleteEntry } = useCrudAppProgramAccount({
     account,
   })
 
-  const count = useMemo(() => accountQuery.data?.count ?? 0, [accountQuery.data?.count])
+  const { publicKey } = useWallet();
+
+  const [message, setMessage] = useState("");
+  
+  const title = accountQuery.data?.title;
+
+  const isFormValid = message.trim() !== '';
+
+  const handleSubmit = () => {
+    if(publicKey && isFormValid && title) {
+      updateEntry.mutateAsync({ title, message, owner: publicKey });
+    }
+  }
+
+  if(!publicKey) {
+    return <p>
+      Conect Your Wallet.......
+    </p>
+  }
 
   return accountQuery.isLoading ? (
     <span className="loading loading-spinner loading-lg"></span>
   ) : (
-    <div className="card card-bordered border-base-300 border-4 text-neutral-content">
-      <div className="card-body items-center text-center">
-        <div className="space-y-6">
-          <h2 className="card-title justify-center text-3xl cursor-pointer" onClick={() => accountQuery.refetch()}>
-            {count}
+    <div className='card card-bordered border-base-300 border-4 text-neutral-conent'>
+      <div className='card-body items-center text-center'>
+        <div className='space-y-6'>
+          <h2 className='card-title cursor-pointer text-3xl'
+            onClick={()=> accountQuery.refetch()}>
+              {accountQuery.data?.title}
           </h2>
-          <div className="card-actions justify-around">
-            <button
-              className="btn btn-xs lg:btn-md btn-outline"
-              onClick={() => incrementMutation.mutateAsync()}
-              disabled={incrementMutation.isPending}
+          <p>{accountQuery.data?.message}</p>
+          
+          <div className='card-actions justify-between'>
+            <textarea value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder='Messages'
+                      className='textarea-bordered w-full max-w-xs'
+              />
+            <button onClick={handleSubmit}
+                    disabled={updateEntry.isPending || !isFormValid}
+                    className='btn btn-xs lg:btn-md btn-primary'
             >
-              Increment
+                update
             </button>
-            <button
-              className="btn btn-xs lg:btn-md btn-outline"
-              onClick={() => {
-                const value = window.prompt('Set value to:', count.toString() ?? '0')
-                if (!value || parseInt(value) === count || isNaN(parseInt(value))) {
-                  return
-                }
-                return setMutation.mutateAsync(parseInt(value))
-              }}
-              disabled={setMutation.isPending}
+            <button onClick={() => {
+              const title = accountQuery.data?.title;
+              if(title) {
+                return deleteEntry.mutateAsync(title);
+              }
+            }}
             >
-              Set
-            </button>
-            <button
-              className="btn btn-xs lg:btn-md btn-outline"
-              onClick={() => decrementMutation.mutateAsync()}
-              disabled={decrementMutation.isPending}
-            >
-              Decrement
-            </button>
-          </div>
-          <div className="text-center space-y-4">
-            <p>
-              <ExplorerLink path={`account/${account}`} label={ellipsify(account.toString())} />
-            </p>
-            <button
-              className="btn btn-xs btn-secondary btn-outline"
-              onClick={() => {
-                if (!window.confirm('Are you sure you want to close this account?')) {
-                  return
-                }
-                return closeMutation.mutateAsync()
-              }}
-              disabled={closeMutation.isPending}
-            >
-              Close
+                delete
             </button>
           </div>
         </div>
       </div>
     </div>
+      
   )
 }
