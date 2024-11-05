@@ -16,7 +16,7 @@ export function CrudAppCreate() {
   const isFormValid = title.trim() !== '' && message.trim() !== '';
 
   const handleSubmit = () => {
-    if(publicKey && isFormValid) {
+    if(publicKey && isFormValid && title) {
       createEntry.mutateAsync({title, message, owner: publicKey});
     }
   }
